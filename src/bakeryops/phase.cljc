@@ -14,14 +14,18 @@
   "Ordered phases representing normal batch progression."
   [:intake :design :produce :inspect :package :audit :archived])
 
-(defn valid-phase? [phase]
+(defn valid-phase?
   "Check if a phase is valid."
+  [phase]
   (contains? (set all-phases) phase))
 
-(defn can-transition? [from-phase to-phase]
+(defn can-transition?
   "Check if a transition from one phase to another is valid
-  (must be forward-only in the sequence, no backtracking)."
-  (when (and (valid-phase? from-phase) (valid-phase? to-phase))
-    (let [from-idx (.indexOf phase-sequence from-phase)
-          to-idx (.indexOf phase-sequence to-phase)]
-      (and (>= from-idx 0) (>= to-idx 0) (< from-idx to-idx)))))
+  (must be forward-only in the sequence, no backtracking). Always returns a
+  boolean (never nil), including when either phase is invalid."
+  [from-phase to-phase]
+  (boolean
+   (and (valid-phase? from-phase) (valid-phase? to-phase)
+        (let [from-idx (.indexOf phase-sequence from-phase)
+              to-idx (.indexOf phase-sequence to-phase)]
+          (and (>= from-idx 0) (>= to-idx 0) (< from-idx to-idx))))))

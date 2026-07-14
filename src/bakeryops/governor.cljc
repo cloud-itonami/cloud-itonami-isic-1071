@@ -58,7 +58,56 @@
   operator sign-off."
   #{:log-production-batch :coordinate-shipment})
 
+(def always-escalate-ops
+  "Operations that always require human sign-off, even when the Governor's
+  hard checks are clean and confidence is high: the two high-stakes
+  actuation events (`high-stakes`) plus `:flag-food-safety-concern` --
+  a food-safety concern is never auto-resolved by advisor confidence alone,
+  it always needs a human look."
+  (conj high-stakes :flag-food-safety-concern))
+
+(def allowed-ops
+  "Closed allowlist of proposal operations this actor may ever make. Any
+  proposal for an operation outside this set -- most importantly direct
+  mixing/baking-line control or food-safety CERTIFICATION authority -- is a
+  hard, permanent block: this actor coordinates plant operations, it does
+  not operate equipment and it does not certify food safety."
+  #{:log-production-batch :schedule-maintenance :flag-food-safety-concern :coordinate-shipment})
+
 ;; ────────────────────────── Checks ──────────────────────────
+
+(defn- op-not-allowed-violations
+  "HARD, permanent block: any proposal outside the closed operation
+  allowlist (e.g. direct baking-line/mixing control, or a food-safety
+  certification action) is refused unconditionally -- this actor has no
+  authority to make such a proposal at all, let alone commit it."
+  [{:keys [op]} _proposal]
+  (when-not (contains? allowed-ops op)
+    [{:rule :op-not-allowed
+      :detail (str op " はこのactorの許可された提案種別 (log-production-batch/"
+                  "schedule-maintenance/flag-food-safety-concern/coordinate-shipment) "
+                  "に含まれない -- baking-line制御やfood-safety認証権限はこのactorに無い")}]))
+
+(defn- effect-not-propose-violations
+  "HARD invariant: this actor's proposals are always `:effect :propose` --
+  it never claims direct write/actuation authority for itself. A proposal
+  asserting any other effect is refused unconditionally."
+  [_request proposal]
+  (when-let [effect (:effect proposal)]
+    (when (not= effect :propose)
+      [{:rule :effect-not-propose
+        :detail (str "この actor の提案は :propose 以外の :effect を持てない (got " effect ")")}])))
+
+(defn- shipment-batch-not-registered-violations
+  "HARD invariant: a plant/batch record must be verified/registered in the
+  store before `:coordinate-shipment` can be proposed against it --
+  coordinating shipment of a batch this plant never checked in is out of
+  scope for this actor."
+  [{:keys [op subject]} st]
+  (when (= op :coordinate-shipment)
+    (when-not (store/production-batch st subject)
+      [{:rule :batch-not-registered
+        :detail (str subject " はプラントに登録されたバッチ記録が無い -- 出荷調整提案は進められない")}])))
 
 (defn- spec-basis-violations
   "A proposal with no jurisdiction citation is a HARD violation -- never
@@ -149,6 +198,15 @@
           :detail (str subject " のプラント衛生スコア(" (:sanitation-score b)
                       ")が最低要件(75)を下回る -- バッチ登録提案は進められない")}]))))
 
+(defn- now-epoch-ms
+  "Current time in epoch milliseconds, portable across Clojure/
+  ClojureScript. Isolated to this single call site so the rest of the
+  namespace (and all of `bakeryops.registry`) stays free of host-clock
+  calls."
+  []
+  #?(:clj (System/currentTimeMillis)
+     :cljs (js/Date.now)))
+
 (defn- scale-calibration-overdue-violations
   "For `:log-production-batch`, INDEPENDENTLY verify that the mixing scale's
   calibration is current (recalibration required every 180 days)."
@@ -156,7 +214,7 @@
   (when (= op :log-production-batch)
     (let [b (store/production-batch st subject)]
       (when (and b (:scale-last-calibration-date b)
-                 (registry/scale-calibration-overdue? (:scale-last-calibration-date b) (js/Date.now)))
+                 (registry/scale-calibration-overdue? (:scale-last-calibration-date b) (now-epoch-ms)))
         [{:rule :scale-calibration-overdue
           :detail (str subject " のスケール校正が期限切れ -- バッチ登録提案は進められない")}]))))
 
@@ -218,10 +276,17 @@
 (defn check
   "Censors a BakeryOpsAdvisor proposal against the Governor rules.
   Returns {:ok? bool :violations [..] :confidence c :escalate? bool
-  :high-stakes? bool :hard? bool}."
+  :high-stakes? bool :hard? bool}.
+
+  Stakes (high-stakes actuation vs. always-escalate) are read off the
+  REQUEST's `:op` -- not off the proposal -- since the operation being
+  proposed (not the advisor's self-reported stake) is what determines
+  whether a human must sign off."
   [request _context proposal st]
   (let [hard (into []
-                   (concat (spec-basis-violations request proposal)
+                   (concat (op-not-allowed-violations request proposal)
+                           (effect-not-propose-violations request proposal)
+                           (spec-basis-violations request proposal)
                            (evidence-incomplete-violations request st)
                            (baking-temp-out-of-range-violations request st)
                            (baking-time-exceeded-violations request st)
@@ -232,17 +297,19 @@
                            (allergen-label-mismatch-violations request st)
                            (food-safety-flag-unresolved-violations request st)
                            (already-processed-violations request st)
-                           (already-shipment-finalized-violations request st)))
+                           (already-shipment-finalized-violations request st)
+                           (shipment-batch-not-registered-violations request st)))
         conf (:confidence proposal 0.0)
         low? (< conf confidence-floor)
-        stakes? (boolean (high-stakes (:stake proposal)))
+        actuation? (boolean (high-stakes (:op request)))
+        escalate-op? (boolean (always-escalate-ops (:op request)))
         hard? (boolean (seq hard))]
-    {:ok?          (and (not hard?) (not low?) (not stakes?))
+    {:ok?          (and (not hard?) (not low?) (not escalate-op?))
      :violations   hard
      :confidence   conf
      :hard?        hard?
-     :escalate?    (and (not hard?) (or low? stakes?))
-     :high-stakes? stakes?}))
+     :escalate?    (and (not hard?) (or low? escalate-op?))
+     :high-stakes? actuation?}))
 
 (defn hold-fact
   "The audit fact written when a proposal is rejected (HOLD)."

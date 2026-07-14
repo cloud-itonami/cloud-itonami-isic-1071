@@ -11,6 +11,6 @@
     5. If valid, audit fact is committed
     6. CLI prints audit trail")
 
-(defn -main [& args]
+(defn -main [& _args]
   (println "BakeryOps simulation: not yet implemented.")
   (println "TODO: integrate langgraph-clj StateGraph when available."))

@@ -64,24 +64,14 @@
 (deftest scale-calibration-overdue-test
   (testing "recent calibration returns false (no violation)"
     ;; Assume calibrated 30 days ago
-    #?(:clj
-       (let [now (System/currentTimeMillis)
-             30-days-ago (- now (* 30 24 60 60 1000))]
-         (is (false? (registry/scale-calibration-overdue? 30-days-ago now))))
-       :cljs
-       (let [now (.now js/Date)
-             30-days-ago (- now (* 30 24 60 60 1000))]
-         (is (false? (registry/scale-calibration-overdue? 30-days-ago now)))))))
+    (let [now #?(:clj (System/currentTimeMillis) :cljs (.now js/Date))
+          thirty-days-ago (- now (* 30 24 60 60 1000))]
+      (is (false? (registry/scale-calibration-overdue? thirty-days-ago now)))))
 
   (testing "overdue calibration returns true (violation)"
-    #?(:clj
-       (let [now (System/currentTimeMillis)
-             190-days-ago (- now (* 190 24 60 60 1000))]
-         (is (true? (registry/scale-calibration-overdue? 190-days-ago now))))
-       :cljs
-       (let [now (.now js/Date)
-             190-days-ago (- now (* 190 24 60 60 1000))]
-         (is (true? (registry/scale-calibration-overdue? 190-days-ago now)))))))
+    (let [now #?(:clj (System/currentTimeMillis) :cljs (.now js/Date))
+          one-ninety-days-ago (- now (* 190 24 60 60 1000))]
+      (is (true? (registry/scale-calibration-overdue? one-ninety-days-ago now))))))
 
 ;; ──────────────────────── Weight Variance ──────────────────────
 
@@ -111,4 +101,4 @@
   (testing "formulation allergen undeclared returns true (risk)"
     (let [formula #{:wheat :milk}
           declared #{:wheat}]
-      (is (true? (registry/allergen-label-risk? formula declared)))))))
+      (is (true? (registry/allergen-label-risk? formula declared))))))

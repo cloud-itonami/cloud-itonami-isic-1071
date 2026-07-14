@@ -1,7 +1,6 @@
 (ns bakeryops.governor-test
   (:require [clojure.test :refer [deftest is testing]]
-            [bakeryops.governor :as governor]
-            [bakeryops.facts :as facts]))
+            [bakeryops.governor :as governor]))
 
 ;; ──────────────────────── Hard Violations ──────────────────────
 
@@ -14,9 +13,18 @@
       (is (some #(= (:rule %) :no-spec-basis) (:violations result)))))
 
   (testing "proposal with proper citation passes spec basis check"
-    (let [req {:op :log-production-batch :subject "batch-001"}
+    (let [batch-id "batch-001"
+          store {:batches {batch-id
+                           {:product-type :bread/white-loaf
+                            :baking-temp-c 200
+                            :baking-time-minutes 35
+                            :moisture-percent 38
+                            :jurisdiction :jp/prefectural
+                            :evidence-checklist [:formulation-record :baking-log :temperature-log
+                                                 :moisture-test :allergen-declaration :weight-check]}}}
+          req {:op :log-production-batch :subject batch-id}
           prop {:cites [{:spec "ISO-12345"}] :value {:jurisdiction :jp/prefectural}}
-          result (governor/check req {:actor-id "gov-1"} prop {})]
+          result (governor/check req {:actor-id "gov-1"} prop store)]
       (is (false? (:hard? result))))))
 
 ;; ──────────────────────── Baking Temperature Violations ──────────────────────
