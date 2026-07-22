@@ -9,4 +9,27 @@
  :itonami.blueprint/required-technologies [:robotics :identity :forms :dmn :bpmn :audit-ledger :cae]
  :itonami.blueprint/optional-technologies [:optimization :telemetry]
  :itonami.blueprint/status :public-oss
- :itonami.blueprint/maturity :blueprint}
+ :itonami.blueprint/maturity :implemented
+ :itonami.blueprint/implemented-slice
+ "BakeryOpsAdvisor ⊣ Bakery Governor, langgraph-clj StateGraph
+ (langgraph.graph, bakeryops.operation/build), append-only audit ledger
+ (bakeryops.store/ledger + append-ledger!, MemStore and a DatomicStore
+ backed by langchain.db via langchain-store.core). A plant-operations
+ COORDINATION actor for bakery-products manufacturing (bread/pastry/
+ cake) -- not direct mixing/baking-line control authority and not
+ food-safety certification authority. Four ops
+ (`:log-production-batch` / `:schedule-maintenance` /
+ `:flag-food-safety-concern` / `:coordinate-shipment`), all `:effect
+ :propose` only. Ten independent HARD Governor checks (spec-basis,
+ evidence-completeness, baking-temp/time, moisture, sanitation-score,
+ scale-calibration, weight-variance, allergen-label, unresolved
+ food-safety flag, double-commit guards) elaborate this blueprint's
+ Governor (`bakeryops.governor`/`bakeryops.registry`). Batch logging
+ and shipment coordination -- this actor's two real actuation events --
+ and food-safety-concern flagging ALWAYS escalate to a human plant
+ operator via the compiled graph's `:request-approval` node
+ (`interrupt-before`, checkpoint-based resume); `:schedule-maintenance`
+ is the only op eligible to auto-commit, and only when the Governor is
+ clean. Every commit/hold/approval-rejected decision lands in the
+ append-only ledger, demo runnable end-to-end against both Store
+ backends (`clojure -M:dev:run`)."}
