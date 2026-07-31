@@ -35,12 +35,12 @@
       (= :committed (:t f)) "<span class=\"ok\">committed</span>"
       (= :approval-granted (:t f)) "<span class=\"ok\">approved</span>"
       (= :approval-rejected (:t f)) "<span class=\"critical\">rejected</span>"
-      (= :governor-hold (:t f)) (let [rule (-> f :basis first)] (str "<span class=\"critical\">HARD hold: " (esc (name (or rule :unknown))) "</span>"))
+      (= :governor-hold (:t f)) (let [rule (-> f :basis first)] (str "<span class=\"critical\">HARD hold: " (esc (str (or rule :unknown))) "</span>"))
       (= :approval-requested (:t f)) "<span class=\"warn\">awaiting approval</span>"
       :else "<span class=\"muted\">in progress</span>")))
 (defn- ledger-row [{:keys [t op subject disposition basis]}]
   (format "        <tr><td>%s</td><td><code>%s</code></td><td>%s</td><td>%s</td></tr>"
-          (esc (name t)) (esc (name (or op :n-a))) (esc subject)
+          (esc (str t)) (esc (str (or op :n-a))) (esc subject)
           (esc (or (some->> basis (map name) (str/join ", ")) (some-> disposition name) ""))))
 (def ^:private gate-rows
   ["        <tr><td><code>:schedule-maintenance</code></td><td><span class=\"ok\">auto-commit when clean + low-stakes</span></td></tr>"
