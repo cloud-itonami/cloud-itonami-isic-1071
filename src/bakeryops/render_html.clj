@@ -41,7 +41,7 @@
 (defn- ledger-row [{:keys [t op subject disposition basis]}]
   (format "        <tr><td>%s</td><td><code>%s</code></td><td>%s</td><td>%s</td></tr>"
           (esc (str t)) (esc (str (or op :n-a))) (esc subject)
-          (esc (or (some->> basis (map name) (str/join ", ")) (some-> disposition name) ""))))
+          (esc (or (some->> basis (map str) (str/join ", ")) (some-> disposition str) ""))))
 (def ^:private gate-rows
   ["        <tr><td><code>:schedule-maintenance</code></td><td><span class=\"ok\">auto-commit when clean + low-stakes</span></td></tr>"
    "        <tr><td><code>:log-production-batch</code></td><td><span class=\"warn\">ALWAYS human approval</span></td></tr>"
