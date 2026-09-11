@@ -35,8 +35,8 @@ Do **not**:
 1. Open an issue describing your proposed change
 2. Link to the relevant ADR (ADR-2607122200 or later)
 3. Submit a pull request against `main`
-4. Ensure all tests pass: `clojure -M:dev:test`
-5. Run linter: `clojure -M:lint`
+4. Ensure all tests pass: `kbb -M:dev:test`
+5. Run linter: `kbb -M:lint`
 
 ## Code Style
 

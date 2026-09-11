@@ -1,5 +1,5 @@
 (ns bakeryops.sim
-  "Demo driver -- `clojure -M:dev:run`. Walks a staged production batch
+  "Demo driver -- `kbb -M:dev:run`. Walks a staged production batch
   through a clean auto-commit (:schedule-maintenance), an always-escalate
   batch logging (human approves), an always-escalate food-safety concern
   (human rejects), and a hard-hold (batch never staged), then prints the
@@ -85,7 +85,7 @@
     {:ledger (store/ledger st)}))
 
 (defn -main
-  "clojure -M:run entrypoint."
+  "kbb -M:run entrypoint."
   [& _args]
   (demo))
 
