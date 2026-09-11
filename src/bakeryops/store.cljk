@@ -26,7 +26,7 @@
        every committed/held/approval-rejected decision fact here, so a
        batch's full operating history is always a query over an immutable
        log. Both backends pass the same contract
-       (test/bakeryops/store_contract_test.cljc).
+       (test/bakeryops/store_contract_test.cljk).
 
   A production batch is the minimal unit of work: one mix/bake run of a
   bakery product, tracked from formulation through baking, inspection, and
