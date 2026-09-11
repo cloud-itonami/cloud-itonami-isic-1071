@@ -32,4 +32,4 @@
  is the only op eligible to auto-commit, and only when the Governor is
  clean. Every commit/hold/approval-rejected decision lands in the
  append-only ledger, demo runnable end-to-end against both Store
- backends (`clojure -M:dev:run`)."}
+ backends (`kbb -M:dev:run`)."}

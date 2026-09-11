@@ -21,7 +21,7 @@ appended to `bakeryops.store`'s append-only audit ledger
 `DatomicStore` (backed by `langchain.db` via `kotoba-lang/langchain-store`)
 that pass the same store-contract test
 (`test/bakeryops/store_contract_test.cljk`). The demo runner
-(`clojure -M:dev:run`) drives the compiled graph end-to-end through a
+(`kbb -M:dev:run`) drives the compiled graph end-to-end through a
 commit path, an escalate→approve→commit path, an escalate→reject→hold
 path, and a hard-hold path, printing the resulting audit ledger.
 
@@ -99,14 +99,14 @@ Mirrors `cloud-itonami-isic-0111` (`cerealops.*`) module-for-module:
   `langgraph-clj` `StateGraph`: advise → govern → decide → commit |
   request-approval → commit | hold, with `interrupt-before` +
   checkpoint-based resume for escalated operations
-- `bakeryops.sim` — demo runner (`clojure -M:dev:run`)
+- `bakeryops.sim` — demo runner (`kbb -M:dev:run`)
 
 ## Testing
 
 ```bash
-clojure -M:dev:test   # run the test suite (langgraph/langchain-store resolved via local sibling checkouts)
-clojure -M:lint       # clj-kondo, 0 errors / 0 warnings
-clojure -M:dev:run    # demo runner -- drives the compiled StateGraph end-to-end
+kbb -M:dev:test   # run the test suite (langgraph/langchain-store resolved via local sibling checkouts)
+kbb -M:lint       # clj-kondo, 0 errors / 0 warnings
+kbb -M:dev:run    # demo runner -- drives the compiled StateGraph end-to-end
 ```
 
 `:dev` pins the transitive `langchain` dependency to the in-monorepo local

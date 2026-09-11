@@ -25,7 +25,7 @@
   :dev {:override-deps
         {io.github.kotoba-lang/langchain
          {:local/root "../../kotoba-lang/langchain"}}}
-  ;; clojure -M:dev:run  -> drive the demo through one OperationActor
+  ;; kbb -M:dev:run  -> drive the demo through one OperationActor
   :run {:main-opts ["-m" "bakeryops.sim"]}
   :render-html {:main-opts ["-m" "bakeryops.render-html"]}
   :test {:extra-paths ["test"]
