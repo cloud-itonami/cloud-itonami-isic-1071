@@ -1,0 +1,32 @@
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isic-1071"
+ :cases
+ [{:id :loaf-bake
+   :kind :thermal
+   :procedure "tin loaf (~10 cm wide, half-width model heated from one side, so conservative) bakes in a 220 C deck oven; the crumb centre must reach setting temperature"
+   :params {:thickness-m 0.05 :conductivity-w-mk 0.40 :density-kg-m3 500.0 :specific-heat-j-kgk 2800.0
+            :t0-c 30.0 :t-hot-c 220.0 :h-front-w-m2k 50.0 :h-back-w-m2k 0.0 :t-back-ambient-c 30.0
+            :threshold-c 94.0 :nodes 21}
+   :sweep {:param :duration-s :values [1500.0 2000.0 2500.0 3000.0 3500.0]}
+   :quantity :final-back-c
+   :limit {:min 94.0 :basis "estimate: bakers take ~94 C at the crumb centre as done; no moisture/evaporation in this conduction model, so the true centre plateaus near 100 C"}
+   :boundary {:lo 300.0 :hi 4000.0}}
+  {:id :rack-trolley-to-oven
+   :kind :transport
+   :procedure "AMR tows a loaded proofing rack trolley from the prover to the oven loader"
+   :params {:mass-kg 250.0 :distance-m 30.0 :v-max-mps 1.0 :a-max-mps2 0.5 :brake-decel-mps2 0.8
+            :drive-force-n 300.0 :crr 0.02 :cog-height-m 0.40 :payload-cog-height-m 0.9
+            :support-half-length-m 0.40 :max-time-s 3000.0}
+   :sweep {:param :payload-kg :values [60.0 100.0 150.0 200.0 300.0]}
+   :quantity :cycle-time-s
+   :limit {:max 40.0 :basis "estimate: rack must reach the oven within ~40 s so the proofed dough does not over-proof in transit"}
+   :boundary {:lo 10.0 :hi 3000.0}}
+  {:id :baking-tray-lift
+   :kind :manipulator
+   :procedure "arm lifts a loaded baking tray from the depanner onto the cooling rack"
+   :params {:l1-m 0.50 :l2-m 0.45 :m1-kg 4.0 :m2-kg 3.0
+            :from [0.60 -0.10] :to [0.25 0.55] :duration-s 2.0 :steps 400}
+   :sweep {:param :payload-kg :values [1.0 2.0 4.0 6.0 8.0]}
+   :quantity :peak-tau1-nm
+   :limit {:max 80.0 :basis "estimate: continuous shoulder torque of a light ~5-8 kg collaborative arm"}
+   :boundary {:lo 0.1 :hi 30.0}}]}
