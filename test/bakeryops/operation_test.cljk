@@ -1,5 +1,5 @@
 (ns bakeryops.operation-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [bakeryops.operation :as operation]
             [bakeryops.governor :as governor]))
 
