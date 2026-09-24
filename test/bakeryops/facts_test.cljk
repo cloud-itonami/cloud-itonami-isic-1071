@@ -1,5 +1,5 @@
 (ns bakeryops.facts-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [bakeryops.facts :as facts]))
 
 ;; ──────────────────────── Product Type Lookups ──────────────────────
