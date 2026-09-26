@@ -9,7 +9,7 @@
             :threshold-c 94.0 :nodes 21}
    :sweep {:param :duration-s :values [1500.0 2000.0 2500.0 3000.0 3500.0]}
    :quantity :final-back-c
-   :limit {:min 94.0 :basis "estimate: bakers take ~94 C at the crumb centre as done; no moisture/evaporation in this conduction model, so the true centre plateaus near 100 C"}
+   :limit {:min 94.0 :basis "source: ChainBaker article states most breads fully baked when internal temperature reaches above 94°C (200°F); https://www.chainbaker.com/when-is-bread-ready"}
    :boundary {:lo 300.0 :hi 4000.0}}
   {:id :rack-trolley-to-oven
    :kind :transport
